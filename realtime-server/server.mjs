@@ -102,8 +102,11 @@ async function loadPersistence() {
       const latest = await mongoDb.collection("messages").find().sort({ numericId: -1 }).limit(1).next();
       store.nextId = latest ? Number(latest.numericId) + 1 : 1;
       return;
-    } catch {
-      console.error("MongoDB unavailable; using local realtime fallback.");
+    } catch (error) {
+      console.error("MongoDB unavailable; using local realtime fallback.", {
+        name: error instanceof Error ? error.name : "UnknownError",
+        message: error instanceof Error ? error.message : String(error),
+      });
       mongoDb = null;
     }
   }
