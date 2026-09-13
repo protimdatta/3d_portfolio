@@ -1,0 +1,80 @@
+---
+title: "Building Chirkut Ghor — My Full-Stack E-commerce Project"
+publishedAt: "2025-03-22"
+summary: "The story behind my personal gift shop project: tech choices, challenges, and what I learned building a MERN stack e-commerce application from scratch."
+author: "Partha Protim Datta"
+tags: ["chirkut-ghor", "mern-stack", "e-commerce", "project-showcase", "mongodb"]
+---
+
+# Building Chirkut Ghor — My Full-Stack E-commerce Project
+
+Chirkut Ghor (which roughly translates to "Little House of Fun") started as a simple idea: build a gift shop where people could browse curated gift combos and individual products. It became my most ambitious project to date and taught me more than any tutorial ever could.
+
+## Why This Project?
+
+I wanted something real. Not a todo app, not a clone — a genuine e-commerce flow with products, a cart, and an order system. Gift combos added an interesting twist: bundling multiple products into a single purchasable unit with custom pricing.
+
+## Tech Stack Decisions
+
+**Frontend: React.js**
+- Component-driven architecture fit the product catalog perfectly
+- React Query for server state management (game changer for caching)
+- Tailwind CSS for rapid, consistent styling
+
+**Backend: Node.js + Express.js**
+- REST API design with proper HTTP status codes
+- JWT authentication for user sessions
+- Modular route structure for maintainability
+
+**Database: MongoDB**
+- Flexible schema for product variations and combo configurations
+- Aggregation pipelines for analytics-ready queries
+- Mongoose for validation and middleware
+
+## Key Features Implemented
+
+### Product & Combo Management
+- Dynamic product categories with filtering
+- Gift combos as first-class entities with custom pricing logic
+- Image upload and optimization
+
+### Shopping Cart
+- Persistent cart using localStorage + server sync
+- Quantity management with stock validation
+- Combo vs individual product handling
+
+### Order Flow
+- Multi-step checkout (shipping → payment → confirmation)
+- Order history with status tracking
+- Email notifications (using Resend)
+
+## Challenges & Solutions
+
+**Challenge: Cart State Sync**
+LocalStorage works until the user switches devices. Solution: merge local cart with server cart on login, using last-write-wins with user confirmation for conflicts.
+
+**Challenge: Combo Pricing Logic**
+Combos aren't just sum of parts — they have promotional pricing. Solution: separate pricing engine that evaluates combo rules at cart/add-to-cart time, not at product level.
+
+**Challenge: Image Handling**
+Product images were slowing down page loads. Solution: implemented lazy loading, WebP conversion, and CDN delivery for production.
+
+## What I'd Do Differently
+
+- Add TypeScript from day one (migrating later is painful)
+- Implement proper testing (Jest + React Testing Library) earlier
+- Use a proper state management library (Zustand/Redux) for cart
+- Set up CI/CD pipeline before deploying
+
+## Current Status
+
+The project is live at [chirkutghor.vercel.app](https://chirkutghor.vercel.app) and the code is on [GitHub](https://github.com/protimdatta/Chirkut-Ghor). It's still evolving — I'm currently adding user reviews, wishlist functionality, and an admin dashboard.
+
+## Lessons Learned
+
+1. **Start with data design** — schema changes cascade everywhere
+2. **Error boundaries save users** — graceful degradation matters
+3. **Deployment isn't the end** — monitoring, logging, and iteration are where the real work begins
+4. **Document as you go** — future you will thank present you
+
+Chirkut Ghor isn't perfect, but it's mine. Every bug fixed, every feature shipped, every late-night debug session made me a better developer. And that's the real product.

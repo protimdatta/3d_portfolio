@@ -1,0 +1,130 @@
+---
+title: "What I Learned with React, Node.js and MongoDB"
+publishedAt: "2025-05-10"
+summary: "Practical lessons from building production-ready applications with the MERN stack — patterns that work, mistakes to avoid, and mental models that stuck."
+author: "Partha Protim Datta"
+tags: ["react", "nodejs", "mongodb", "mern", "best-practices", "lessons-learned"]
+---
+
+# What I Learned with React, Node.js and MongoDB
+
+After building several projects with the MERN stack (including Chirkut Ghor and various diploma coursework projects), certain patterns emerged. These aren't theoretical best practices — they're things I learned by breaking things in production.
+
+## React: Components, State, and Performance
+
+### Colocate State
+Keep state as close to where it's used as possible. Lifting state up is necessary sometimes, but it's often a sign you need a better component breakdown. I now default to local state and only reach for context/Zustand when multiple unrelated components need the same data.
+
+### React Query Changed Everything
+Server state ≠ client state. React Query (TanStack Query) handles caching, background refetching, deduplication, and stale-while-revalidate automatically. Stop putting API data in `useState`/`useEffect` — it's a recipe for bugs.
+
+### Memoization: Measure First
+`React.memo`, `useMemo`, `useCallback` have costs. I wasted hours optimizing components that re-rendered twice a minute. Profile with React DevTools Profiler first. Most performance issues I've had were:
+- Unnecessary object/array creation in render
+- Inline function definitions passed as props
+- Missing keys in lists
+
+### Compound Components Pattern
+For flexible UI like `<Select><Option /></Select>`, the compound components pattern beats props drilling. It gives consumers control without API explosion.
+
+## Node.js/Express: API Design & Reliability
+
+### Structure Routes by Resource, Not Feature
+```
+/api/products
+/api/products/:id
+/api/orders
+/api/orders/:id
+```
+Not `/api/getProducts`, `/api/createOrder`. RESTful conventions make APIs predictable and cacheable.
+
+### Middleware Chain Order Matters
+```js
+app.use(helmet())           // Security headers first
+app.use(cors())             // CORS before routes
+app.use(express.json())     // Body parsing
+app.use(rateLimiter)        // Rate limiting
+app.use(authMiddleware)     // Auth
+app.use(routes)             // Your routes
+app.use(errorHandler)       // Error handling last
+```
+
+### Validation at the Boundary
+Use Zod (or Joi) to validate every request body, query, and params. Return 400 with clear messages. Your database constraints are the last line of defense, not the first.
+
+### Structured Logging
+`console.log` doesn't scale. Use Pino or Winston with:
+- Request ID correlation
+- Structured JSON output
+- Log levels (info/warn/error)
+- Sampling for high-traffic endpoints
+
+## MongoDB: Schema Design & Queries
+
+### Embed vs Reference — It Depends
+**Embed when:** data is always accessed together, bounded cardinality (e.g., product reviews, order items)
+**Reference when:** data grows unbounded, accessed independently, shared across documents (e.g., users, categories)
+
+For Chirkut Ghor, order items are embedded (always shown with order), but products are referenced (shared across combos, categories, search).
+
+### Indexes Are Not Optional
+Every query pattern needs an index. Use `explain()` to verify. Compound index order matters — equality first, then sort, then range.
+
+```js
+// For: find({ category: 'gifts', status: 'active' }).sort({ createdAt: -1 })
+db.products.createIndex({ category: 1, status: 1, createdAt: -1 })
+```
+
+### Aggregation Pipeline > Multiple Queries
+Instead of fetching products, then looping to fetch categories, use `$lookup`. One round trip beats N+1 every time.
+
+### Transactions for Multi-Document Writes
+Order creation touches: orders collection, product inventory, user order history. Use transactions (or compensation logic) to avoid partial states.
+
+## Cross-Cutting Concerns
+
+### Environment Configuration
+Never hardcode. Use a schema-validated config module:
+```js
+// config.js
+import { z } from 'zod'
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']),
+  MONGODB_URI: z.string().url(),
+  JWT_SECRET: z.string().min(32),
+  RESEND_API_KEY: z.string().startsWith('re_'),
+})
+export const env = envSchema.parse(process.env)
+```
+
+### Error Handling: Be Specific
+```js
+// Bad
+catch (err) { return res.status(500).json({ error: 'Server error' }) }
+
+// Good
+catch (err) {
+  if (err instanceof ZodError) return res.status(400).json({ errors: err.flatten() })
+  if (err.code === 11000) return res.status(409).json({ error: 'Duplicate entry' })
+  logger.error(err, { requestId })
+  return res.status(500).json({ error: 'Internal server error' })
+}
+```
+
+### Testing: Start with Integration
+Unit tests for pure functions. Integration tests for API endpoints (Supertest + test database). E2E for critical user flows (Playwright). Skip snapshot testing — it catches refactors, not bugs.
+
+## The Mental Model Shift
+
+The biggest change wasn't learning APIs — it was shifting from "how do I make this work?" to "how will this fail?"
+
+- What happens if the DB is slow?
+- What if the user double-clicks submit?
+- What if the third-party API is down?
+- What if this grows 10x?
+
+Building for failure modes first leads to simpler, more resilient code. The MERN stack gives you the tools — how you use them determines the outcome.
+
+---
+
+*Still learning. Always will be. If you're on a similar path, feel free to reach out — happy to compare notes.*

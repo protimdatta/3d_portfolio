@@ -1,0 +1,50 @@
+const config = {
+  title: "Partha Protim Datta | Full Stack Developer",
+  firstName: "Partha",
+  lastName: "Datta",
+  author: "Partha Protim Datta",
+  copyrightYear: "2026",
+  role: "Independent Full Stack Developer",
+  location: "Cox's Bazar, Bangladesh",
+  description: {
+    long: "Portfolio of Partha Protim Datta, Independent Full Stack Developer and Diploma in Computer Science & Technology student at Cox’s Bazar Model Polytechnic Institute. Building practical web projects with React, Node.js, Express, MongoDB, PHP, and MySQL, with a long-term goal of becoming a Software Engineer.",
+    short:
+      "Partha Protim Datta — Independent Full Stack Developer from Cox's Bazar, building toward a Software Engineer career.",
+  }, 
+  keywords: [
+    "Partha Protim Datta",
+    "Partha",
+    "Independent Full Stack Developer",
+    "Software Engineer",
+    "full stack developer",
+    "web developer",
+    "Cox's Bazar",
+    "Bangladesh",
+    "React.js",
+    "Node.js",
+    "Express.js",
+    "MongoDB",
+    "MySQL",
+    "JavaScript",
+    "Chirkut Ghor",
+    "portfolio",
+    "MERN stack",
+  ],
+  email: "protim939@gmail.com",
+  site: process.env.NEXT_PUBLIC_SITE_URL || "https://protimdatta.vercel.app",
+  githubUsername: "protimdatta",
+  githubRepo: "",
+  resumePath: "/assets/Partha-Protim-Datta-CV.pdf",
+  profileImage: "/assets/profile/partha-protim-datta.jpg",
+  get ogImg() {
+    return this.site + "/assets/seo/og-image.png";
+  },
+  social: {
+    twitter: "https://x.com/protimdatta1",
+    linkedin: "https://www.linkedin.com/in/protimdatta",
+    instagram: "https://www.instagram.com/pa_r_tha__",
+    facebook: "https://www.facebook.com/protimdattapartha10",
+    github: "https://github.com/protimdatta",
+  },
+};
+export { config };
