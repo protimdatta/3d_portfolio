@@ -5,7 +5,7 @@ import process from "node:process";
 import { Server } from "socket.io";
 import { getMongoDb, isMongoConfigured } from "./mongodb.mjs";
 
-const PORT = Number(process.env.REALTIME_PORT || 4000);
+const PORT = Number(process.env.PORT || process.env.REALTIME_PORT || 4000);
 const DATA_DIR = new URL("./data/", import.meta.url);
 const DATA_FILE = new URL("./messages.json", DATA_DIR);
 const MAX_MESSAGE_LENGTH = 500;
