@@ -32,15 +32,14 @@ This is my customized version of an open-source 3D portfolio project. Credit to 
 
 | Layer | Technologies |
 |---|---|
-| **Frontend** | React.js, Next.js, JavaScript, TypeScript |
-| **Backend** | Node.js, Express.js, PHP, Laravel, Python, Django |
-| **Databases** | MySQL, MongoDB |
-| **Styling** | Tailwind CSS, Shadcn UI, Aceternity UI |
-| **Animation** | GSAP, Framer Motion |
+| **Framework** | Next.js, React, TypeScript |
+| **Styling** | Tailwind CSS, Sass |
+| **UI** | Radix UI, Lucide React |
+| **Animation** | GSAP, Motion |
 | **3D** | Spline Runtime |
-| **APIs & Deployment** | REST APIs, Git, GitHub, Linux, Nginx, Cloudflare |
+| **Realtime & Data** | Socket.IO, MongoDB |
 | **Email** | Resend |
-| **Misc** | Lenis (smooth scroll), Zod, next-themes |
+| **Misc** | Lenis (smooth scroll), Zod, next-themes, MDX |
 
 ---
 
