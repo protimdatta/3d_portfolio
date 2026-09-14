@@ -1,12 +1,18 @@
-# 🚀 3D Portfolio
+# 🚀 Partha Protim Datta | 3D Portfolio
 
-A jaw-dropping developer portfolio packed with interactive 3D animations, buttery smooth transitions, and a space-themed aesthetic. Not your average portfolio template! This one has a fully interactive 3D keyboard where each keycap is a skill.
+Personal portfolio of **Partha Protim Datta**, an Independent Full Stack Developer and MERN Stack Developer from Cox's Bazar, Bangladesh. This project showcases my work in full-stack web development, modern web applications, REST APIs, responsive UI, deployment, and realtime applications through an interactive 3D experience.
 
-> **Free to use!** This portfolio is open source. If you use it, a credit/link back would be really appreciated 🙏
+I have built and worked on **16+ full-stack web applications** and **40+ responsive web pages** across educational, e-commerce, productivity, and interactive web projects. I am currently expanding my Python and Django skills with the long-term goal of becoming a professional Software Engineer.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Naresh-Khatri/3d-portfolio)
+- **Email:** [protim939@gmail.com](mailto:protim939@gmail.com)
+- **GitHub:** [github.com/protimdatta](https://github.com/protimdatta)
+- **Portfolio:** [protimdatta.vercel.app](https://protimdatta.vercel.app)
 
-![Portfolio Preview](https://github.com/Naresh-Khatri/Portfolio/blob/main/public/assets/projects-screenshots/portfolio/landing.png?raw=true)
+This is my customized version of an open-source 3D portfolio project. Credit to the original template author is retained through the project history and implementation patterns.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/protimdatta/3d_portfolio)
+
+![Portfolio Preview](https://raw.githubusercontent.com/protimdatta/3d_portfolio/main/public/assets/projects-screenshots/Personal%20Portfolio/protimdattapartha.png)
 
 ## ✨ Features
 
@@ -18,14 +24,21 @@ A jaw-dropping developer portfolio packed with interactive 3D animations, butter
 - **Contact Form** — Email delivery via Resend
 - **Analytics** _(optional)_ — Umami analytics integration
 
+## Featured Project
+
+**[Chirkut Ghor](https://chirkutghor.vercel.app)** is an e-commerce and gift business project for special gifts and combo packages. It is one of the full-stack projects featured in this portfolio.
+
 ## 🛠️ Tech Stack
 
 | Layer | Technologies |
 |---|---|
-| **Framework** | Next.js 14, React 18, TypeScript |
+| **Frontend** | React.js, Next.js, JavaScript, TypeScript |
+| **Backend** | Node.js, Express.js, PHP, Laravel, Python, Django |
+| **Databases** | MySQL, MongoDB |
 | **Styling** | Tailwind CSS, Shadcn UI, Aceternity UI |
 | **Animation** | GSAP, Framer Motion |
 | **3D** | Spline Runtime |
+| **APIs & Deployment** | REST APIs, Git, GitHub, Linux, Nginx, Cloudflare |
 | **Email** | Resend |
 | **Misc** | Lenis (smooth scroll), Zod, next-themes |
 
@@ -43,8 +56,8 @@ A jaw-dropping developer portfolio packed with interactive 3D animations, butter
 1. **Clone the repository:**
 
     ```bash
-    git clone https://github.com/Naresh-Khatri/3d-portfolio.git
-    cd 3d-portfolio
+    git clone https://github.com/protimdatta/3d_portfolio.git
+    cd 3d_portfolio
     ```
 
 2. **Install dependencies:**
@@ -80,37 +93,33 @@ A jaw-dropping developer portfolio packed with interactive 3D animations, butter
 
 ---
 
-## 🎨 Make It Your Own
+## 🎨 Portfolio Configuration
 
-All personal info is centralized in [`src/data/config.ts`](src/data/config.ts). Edit this single file to rebrand the portfolio:
+The personal information for this portfolio is centralized in [`src/data/config.ts`](src/data/config.ts). The current configuration represents Partha Protim Datta:
 
 ```ts
 const config = {
-  title: "Your Name | Your Title",
+  title: "Partha Protim Datta | Full Stack Developer",
   description: {
     long: "Your long description for SEO...",
     short: "Your short description...",
   },
   keywords: ["your", "keywords"],
-  author: "Your Name",
-  email: "you@example.com",
-  site: "https://yoursite.com",
+  author: "Partha Protim Datta",
+  email: "protim939@gmail.com",
+  site: "https://protimdatta.vercel.app",
 
   // GitHub stars button in the header
-  githubUsername: "your-github-username",
-  githubRepo: "your-repo-name",
+  githubUsername: "protimdatta",
+  githubRepo: "3d_portfolio",
 
   social: {
-    twitter: "https://x.com/you",
-    linkedin: "https://linkedin.com/in/you",
-    instagram: "https://instagram.com/you",
-    facebook: "https://facebook.com/you",
-    github: "https://github.com/you",
+    github: "https://github.com/protimdatta",
   },
 };
 ```
 
-Other files you'll want to customize:
+Other project files that contain portfolio content:
 
 | File | What to change |
 |---|---|
@@ -164,7 +173,7 @@ These features activate automatically when the `NEXT_PUBLIC_WS_URL` environment 
 
 ## 🚀 Deployment
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Naresh-Khatri/3d-portfolio)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/protimdatta/3d_portfolio)
 
 This site is deployed on **Vercel**. To deploy your own:
 
@@ -187,6 +196,6 @@ If you'd like to contribute or suggest improvements, feel free to open an issue 
 
 This project is open source and available under the [MIT License](LICENSE).
 
-If you use this portfolio, a credit or link back to the [original repo](https://github.com/Naresh-Khatri/3d-portfolio) would be much appreciated ❤️
+This customized portfolio is based on the original open-source [3D portfolio project](https://github.com/Naresh-Khatri/3d-portfolio). Please retain attribution when reusing the original template.
 
-Note on analytics: a deployed copy reports its own hostname once per browser (nothing else — no visitor, page, or referrer data) so I can see where the template gets used.
+Note on analytics: when enabled, a deployed copy reports its own hostname once per browser (nothing else — no visitor, page, or referrer data). Analytics are optional and can be disabled by leaving the Umami variables empty.
