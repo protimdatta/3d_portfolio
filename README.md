@@ -195,6 +195,6 @@ If you'd like to contribute or suggest improvements, feel free to open an issue 
 
 This project is open source and available under the [MIT License](LICENSE).
 
-This customized [3D portfolio project](https://github.com/protimdatta/3d_portfolio) is maintained by Partha Protim Datta and is based on an original open-source portfolio template by Naresh Khatri. Please retain attribution when reusing the original template.
+This customized [3D portfolio project](https://github.com/protimdatta/3d_portfolio) is maintained by Partha Protim Datta.
 
 Note on analytics: when enabled, a deployed copy reports its own hostname once per browser (nothing else — no visitor, page, or referrer data). Analytics are optional and can be disabled by leaving the Umami variables empty.
