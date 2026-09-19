@@ -25,7 +25,7 @@ interface EditProfileModalProps {
   user: User;
   isOpen: boolean;
   onClose: () => void;
-  updateProfile: (data: { name: string; avatar: string; color: string }) => void;
+  updateProfile: (data: { avatar: string; color: string }) => void;
 }
 
 export const EditProfileModal = ({
@@ -50,7 +50,7 @@ export const EditProfileModal = ({
 
   const handleSave = () => {
     if (name.trim()) {
-      updateProfile({ name, avatar: avatarSeed, color });
+      updateProfile({ avatar: avatarSeed, color });
       onClose();
     }
   };
@@ -97,13 +97,13 @@ export const EditProfileModal = ({
             </div>
             <input
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              readOnly
+              aria-label="Server-generated display name"
               className={cn(
                 "w-full text-base font-semibold px-2 py-1 rounded-md border-none outline-none",
                 "bg-black/5 dark:bg-white/5 focus:bg-black/10 dark:focus:bg-white/10",
                 "transition-colors",
-                THEME.text.header
+                THEME.text.header, "cursor-default"
               )}
               autoFocus
               onKeyDown={(e) => {

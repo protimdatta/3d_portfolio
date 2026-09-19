@@ -319,7 +319,7 @@ export const ChatMessageList = ({
                           {/* )} */}
                         </div>
                         <span>{msg.flag}</span>
-                        {profile?.isAdmin && <AdminBadge />}
+                        {msg.isAdmin && <AdminBadge />}
                         {isMe && (
                           <span className="bg-[#5865f2] text-white text-[10px] px-1 rounded font-bold">YOU</span>
                         )}

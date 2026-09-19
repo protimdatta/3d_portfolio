@@ -16,7 +16,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 import { SocketContext, Message, ChatItem } from "@/contexts/socketio";
 import { useToast } from "@/components/ui/use-toast";
-import { Users, Users2, Hash, Settings } from "lucide-react";
+import { Users, Users2, Hash, Settings, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { useChatScroll } from "./hooks/use-chat-scroll";
@@ -33,7 +33,7 @@ import { THEME } from "./constants";
 import { getAvatarUrl } from "@/lib/avatar";
 
 const OnlineUsers = () => {
-  const { socket, users: _users, msgs, hasMoreMessages, loadingHistory, fetchOlderMessages, initStatus, fetchInitialMessages } = useContext(SocketContext);
+  const { socket, users: _users, msgs, hasMoreMessages, loadingHistory, fetchOlderMessages, initStatus, fetchInitialMessages, unreadCount, soundMuted, setChatViewing, toggleSound } = useContext(SocketContext);
   const users = Array.from(_users.values());
   const [showUserList, setShowUserList] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -44,9 +44,8 @@ const OnlineUsers = () => {
 
   const currentUser = users.find(u => u.socketId === socket?.id);
   const { toast } = useToast();
-  const { playSendSound, playReceiveSound } = useSounds();
+  const { playSendSound } = useSounds();
   const connectionStatus = useConnectionStatus(socket);
-  const prevMsgsLength = useRef(msgs.length);
 
   // Driven by the server's "warning" event when msg-send is rate limited
   const [rateLimitedUntil, setRateLimitedUntil] = useState<number | null>(null);
@@ -63,28 +62,10 @@ const OnlineUsers = () => {
     return () => { socket.off("warning", onWarning); };
   }, [socket]);
 
-  // Play send/receive sounds for regular messages
   useEffect(() => {
-    if (msgs.length > prevMsgsLength.current) {
-      // Skip sounds when receiving initial message history (large batch on connect)
-      const isSmallBatch = msgs.length - prevMsgsLength.current <= 2;
-      const lastMsg = msgs[msgs.length - 1];
-      const isSystem = lastMsg && "type" in lastMsg && lastMsg.type === "system";
-      let isRecent = true;
-      if (lastMsg?.createdAt) {
-        const msgTime = new Date(lastMsg.createdAt).getTime();
-        if (Date.now() - msgTime > 10000) isRecent = false;
-      }
-
-      if (isSmallBatch && isRecent && lastMsg && !isSystem) {
-        if (lastMsg.username === currentUser?.name) playSendSound();
-        else playReceiveSound();
-      }
-    }
-    prevMsgsLength.current = msgs.length;
-  }, [msgs, playSendSound, playReceiveSound, currentUser]);
-
-
+    setChatViewing(isOpen);
+    return () => setChatViewing(false);
+  }, [isOpen, setChatViewing]);
 
   // Use custom hooks
   const {
@@ -144,13 +125,11 @@ const OnlineUsers = () => {
     setReplyTarget(null);
   };
 
-  const updateProfile = ({ name, avatar, color }: { name: string; avatar: string, color?: string }) => {
+  const updateProfile = ({ avatar, color }: { avatar: string, color?: string }) => {
     socket?.emit("update-user", {
-      username: name,
       avatar,
       color
     });
-    localStorage.setItem("username", name);
     localStorage.setItem("avatar", avatar);
     if (color) localStorage.setItem("color", color);
     const { dismiss } = toast({ title: "Profile updated" });
@@ -215,7 +194,7 @@ const OnlineUsers = () => {
                     className={cn(
                       "mr-4 h-11 w-12 shadow-lg transition-all duration-300 z-50 p-0",
                       "bg-background/20 hover:bg-background/80 backdrop-blur-sm border-2 border-white/30 rounded-lg",
-                      !isOpen && unreads > 0 && "animate-pulse border-green-500/50"
+                      !isOpen && (unreads > 0 || unreadCount > 0) && "animate-pulse border-green-500/50"
                     )}
                   >
                     <div className="relative flex items-center justify-center w-full h-full">
@@ -230,16 +209,16 @@ const OnlineUsers = () => {
                             repeat: Infinity,
                             repeatDelay: 2,
                           }}
-                          className={cn("absolute -inset-1 rounded-full", unreads > 0 ? "bg-green-500/40" : "bg-transparent")}
+                          className={cn("absolute -inset-1 rounded-full", (unreads > 0 || unreadCount > 0) ? "bg-green-500/40" : "bg-transparent")}
                         />
                         <Users2 className="w-6 h-6" />
                       </div>
 
                       <span className={cn(
                         "absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold transition-colors",
-                        unreads > 0 ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                        (unreads > 0 || unreadCount > 0) ? "bg-green-500 text-white" : "bg-red-500 text-white"
                       )}>
-                        {unreads > 0 ? unreads : users.length}
+                        {unreads > 0 ? unreads : unreadCount > 0 ? unreadCount : users.length}
                       </span>
                     </div>
                   </Button>
@@ -283,6 +262,16 @@ const OnlineUsers = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn("h-8 w-8", THEME.text.secondary, THEME.bg.hover)}
+                onClick={toggleSound}
+                title={soundMuted ? "Unmute chat sounds" : "Mute chat sounds"}
+                aria-label={soundMuted ? "Unmute chat sounds" : "Mute chat sounds"}
+              >
+                {soundMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </Button>
               {currentUser && (
                 <Button
                   variant="ghost"

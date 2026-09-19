@@ -11,6 +11,7 @@ import React, {
 } from "react";
 import { io, Socket } from "socket.io-client";
 import { useToast } from "@/components/ui/use-toast";
+import { useSounds } from "@/components/realtime/hooks/use-sounds";
 
 export type User = {
   id: string;
@@ -30,6 +31,7 @@ export type Message = {
   sessionId: string;
   flag: string;
   country: string;
+  city?: string;
   username: string;
   avatar: string;
   color?: string;
@@ -37,6 +39,7 @@ export type Message = {
   createdAt: string | Date;
   editedAt?: string | Date;
   replyTo?: { id: string; username: string; content: string };
+  isAdmin?: boolean;
 };
 
 export type SystemMessage = {
@@ -72,6 +75,11 @@ type SocketContextType = {
   fetchOlderMessages: () => void;
   initStatus: "idle" | "loading" | "loaded";
   fetchInitialMessages: () => void;
+  unreadCount: number;
+  soundMuted: boolean;
+  setChatViewing: (isViewing: boolean) => void;
+  clearUnread: () => void;
+  toggleSound: () => void;
 };
 
 const INITIAL_STATE: SocketContextType = {
@@ -89,11 +97,23 @@ const INITIAL_STATE: SocketContextType = {
   fetchOlderMessages: () => { },
   initStatus: "idle",
   fetchInitialMessages: () => { },
+  unreadCount: 0,
+  soundMuted: false,
+  setChatViewing: () => { },
+  clearUnread: () => { },
+  toggleSound: () => { },
 };
 
 export const SocketContext = createContext<SocketContextType>(INITIAL_STATE);
 
-const SESSION_ID_KEY = "portfolio-site-session-id";
+const SESSION_TOKEN_KEY = "portfolio-site-session-token";
+const SOUND_MUTED_KEY = "portfolio-chat-sound-muted";
+
+function mergeChatItems(current: ChatItem[], incoming: ChatItem[]) {
+  const byId = new Map<string, ChatItem>();
+  for (const item of [...current, ...incoming]) byId.set(String(item.id), item);
+  return [...byId.values()].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+}
 
 const SocketContextProvider = ({ children }: { children: ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -106,8 +126,15 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [initStatus, setInitStatus] = useState<"idle" | "loading" | "loaded">("idle");
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [soundMuted, setSoundMuted] = useState(false);
   const socketRef = useRef<Socket | null>(null);
+  const sessionIdRef = useRef<string | null>(null);
+  const knownMessageIdsRef = useRef(new Set<string>());
+  const soundMutedRef = useRef(false);
   const initStatusRef = useRef<"idle" | "loading" | "loaded">("idle");
+  const chatViewingRef = useRef(false);
+  const { playSendSound, playReceiveSound } = useSounds();
 
   const fetchInitialMessages = useCallback(() => {
     if (initStatusRef.current !== "idle") return;
@@ -123,7 +150,7 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
     if (!s || loadingHistory || !hasMoreMessages) return;
     setMsgs(current => {
       if (current.length === 0) return current;
-      const oldestId = Number(current[0].id);
+      const oldestId = String(current[0].id);
       if (!oldestId) return current;
       setLoadingHistory(true);
       s.emit("msgs-fetch-history", { before: oldestId });
@@ -144,12 +171,34 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
   }, [users]);
   const { toast } = useToast();
 
+  useEffect(() => {
+    const muted = localStorage.getItem(SOUND_MUTED_KEY) === "1";
+    soundMutedRef.current = muted;
+    setSoundMuted(muted);
+  }, []);
+
+  const setChatViewing = useCallback((isViewing: boolean) => {
+    chatViewingRef.current = isViewing;
+    if (isViewing) setUnreadCount(0);
+  }, []);
+
+  const clearUnread = useCallback(() => setUnreadCount(0), []);
+
+  const toggleSound = useCallback(() => {
+    setSoundMuted((muted) => {
+      const next = !muted;
+      soundMutedRef.current = next;
+      localStorage.setItem(SOUND_MUTED_KEY, next ? "1" : "0");
+      return next;
+    });
+  }, []);
+
   // SETUP SOCKET.IO
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_WS_URL) return;
     const newSocket = io(process.env.NEXT_PUBLIC_WS_URL!, {
       auth: {
-        sessionId: localStorage.getItem(SESSION_ID_KEY),
+        sessionToken: localStorage.getItem(SESSION_TOKEN_KEY),
       },
       reconnection: true,
       reconnectionAttempts: Infinity,
@@ -182,14 +231,16 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
         return next;
       });
     });
-    newSocket.on("msgs-receive-init", (msgs) => {
-      setMsgs(msgs);
+    newSocket.on("msgs-receive-init", (msgs: ChatItem[]) => {
+      msgs.forEach((item) => knownMessageIdsRef.current.add(String(item.id)));
+      setMsgs((current) => mergeChatItems(current, msgs));
       setHasMoreMessages(true);
       initStatusRef.current = "loaded";
       setInitStatus("loaded");
     });
     newSocket.on("msgs-receive-history", (data: { messages: ChatItem[]; hasMore: boolean; reactions: Record<string, Reaction[]> }) => {
-      setMsgs(prev => [...data.messages, ...prev]);
+      data.messages.forEach((item) => knownMessageIdsRef.current.add(String(item.id)));
+      setMsgs(prev => mergeChatItems(prev, data.messages));
       setHasMoreMessages(data.hasMore);
       setLoadingHistory(false);
       if (data.reactions) {
@@ -203,15 +254,30 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     });
-    newSocket.on("session", ({ sessionId }) => {
-      localStorage.setItem(SESSION_ID_KEY, (sessionId));
+    newSocket.on("session", ({ sessionId: nextSessionId, sessionToken }: { sessionId: string; sessionToken: string }) => {
+      sessionIdRef.current = nextSessionId;
+      localStorage.setItem(SESSION_TOKEN_KEY, sessionToken);
+      const savedAvatar = localStorage.getItem("avatar");
+      const savedColor = localStorage.getItem("color");
+      if (savedAvatar && savedColor) {
+        newSocket.emit("update-user", { avatar: savedAvatar, color: savedColor });
+      }
     });
 
-    newSocket.on("msg-receive", (msgs) => {
-      // Drop live messages until the popover is opened and init has been fetched.
-      // The init fetch returns the latest 50 user messages anyway, so nothing is lost.
-      if (initStatusRef.current !== "loaded") return;
-      setMsgs((p) => [...p, msgs]);
+    newSocket.on("msg-receive", (message: ChatItem) => {
+      const messageId = String(message.id);
+      if (knownMessageIdsRef.current.has(messageId)) return;
+      knownMessageIdsRef.current.add(messageId);
+      setMsgs((current) => mergeChatItems(current, [message]));
+
+      if (!("type" in message)) {
+        if (message.sessionId === sessionIdRef.current) {
+          if (!soundMutedRef.current) playSendSound();
+        } else if (!chatViewingRef.current) {
+          setUnreadCount((count) => count + 1);
+          if (!soundMutedRef.current) playReceiveSound();
+        }
+      }
     });
 
     newSocket.on("warning", (data: { message: string }) => {
@@ -268,7 +334,7 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket, users, setUsers, msgs, reactions, profileMap, cursorPositions, followingId, setFollowingId, hasMoreMessages, loadingHistory, fetchOlderMessages, initStatus, fetchInitialMessages }}>
+    <SocketContext.Provider value={{ socket, users, setUsers, msgs, reactions, profileMap, cursorPositions, followingId, setFollowingId, hasMoreMessages, loadingHistory, fetchOlderMessages, initStatus, fetchInitialMessages, unreadCount, soundMuted, setChatViewing, clearUnread, toggleSound }}>
       {children}
     </SocketContext.Provider>
   );
